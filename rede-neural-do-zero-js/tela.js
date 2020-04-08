@@ -1,8 +1,8 @@
 var canvas, ctx, ALTURA, LARGURA, frames = 0;
-ALTURA = window.innerHeight;
-LARGURA = window.innerWidth;
-if (LARGURA > 1000) {
-    LARGURA = 1000;
+ALTURA = window.innerHeight - 50;
+LARGURA = window.innerWidth - 20;
+if (LARGURA > 1500) {
+    LARGURA = 1500;
     ALTURA = 800;
 }
 
@@ -14,7 +14,6 @@ function main() {
 
     ctx = canvas.getContext("2d");
     document.body.appendChild(canvas);
-
     roda();
 }
 function roda() {
@@ -29,7 +28,7 @@ function atualiza() {
     // obstaculos.atualiza();
 }
 function desenha() {
-    ctx.fillStyle = "#50beff";
+    ctx.fillStyle = "white";
     ctx.fillRect(0, 0, LARGURA, ALTURA);
     redeNeuralTela.desenhar();
     // chao.desenha();
