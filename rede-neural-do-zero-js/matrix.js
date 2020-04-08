@@ -2,26 +2,36 @@ class Matrix {
     constructor(rows, cols) {
         this.rows = rows;
         this.cols = cols;
+
         this.data = [];
 
         for (let i = 0; i < rows; i++) {
-            let arr = [];
+            let arr = []
             for (let j = 0; j < cols; j++) {
-                arr.push(Math.floor(Math.random() * 10));                
+                arr.push(0)
             }
             this.data.push(arr);
         }
     }
 
+    // Funções Diversas
+
     static arrayToMatrix(arr) {
         let matrix = new Matrix(arr.length, 1);
-
         matrix.map((elm, i, j) => {
             return arr[i];
-        });
-
-        matrix.print();
+        })
+        return matrix;
     }
+
+    static MatrixToArray(obj) {
+        let arr = []
+        obj.map((elm, i, j) => {
+            arr.push(elm);
+        })
+        return arr;
+    }
+
 
     print() {
         console.table(this.data);
@@ -33,52 +43,95 @@ class Matrix {
         });
     }
 
-    static map(func) {
-        let matrix = new Matrix(A.rows, B.rows);
+    static map(A, func) {
+        let matrix = new Matrix(A.rows, A.cols);
 
-        matrix.data = matrix.data.map((arr, i) => {
+        matrix.data = A.data.map((arr, i) => {
             return arr.map((num, j) => {
                 return func(num, i, j);
-            });
-        });
+            })
+        })
+
         return matrix;
     }
 
     map(func) {
+
         this.data = this.data.map((arr, i) => {
             return arr.map((num, j) => {
                 return func(num, i, j);
-            });
-        });
+            })
+        })
+
         return this;
     }
 
-    static add(A, B) {
-        var matrix = new Matrix(A.rows, B.cols);
+    static transpose(A){
+        var matrix = new Matrix(A.cols, A.rows);
+        matrix.map((num,i,j) => {
+            return A.data[j][i];
+        });
+        return matrix;
+    }
+
+    // Operações Estáticas Matriz x Escalar 
+    
+    static escalar_multiply(A, escalar) {
+        var matrix = new Matrix(A.rows, A.cols);
 
         matrix.map((num, i, j) => {
-            return A.data[i][j] + B.data[i][j];
+            return A.data[i][j] * escalar;
         });
 
-        // matrix.log();
-        
+        return matrix;
+    }
+    
+    // Operações Estáticas Matriz x Matriz
+
+    static hadamard(A, B) {
+        var matrix = new Matrix(A.rows, A.cols);
+
+        matrix.map((num, i, j) => {
+            return A.data[i][j] * B.data[i][j]
+        });
+
+        return matrix;
+    }
+
+    static add(A, B) {
+        var matrix = new Matrix(A.rows, A.cols);
+
+        matrix.map((num, i, j) => {
+            return A.data[i][j] + B.data[i][j]
+        });
+
+        return matrix;
+    }
+
+    static subtract(A, B) {
+        var matrix = new Matrix(A.rows, A.cols);
+
+        matrix.map((num, i, j) => {
+            return A.data[i][j] - B.data[i][j]
+        });
+
+        return matrix;
     }
 
     static multiply(A, B) {
         var matrix = new Matrix(A.rows, B.cols);
 
         matrix.map((num, i, j) => {
-            let sum = 0;
+            let sum = 0
             for (let k = 0; k < A.cols; k++) {
-                const elm1 = A.data[i][k];
-                const elm2 = B.data[k][j];
+                let elm1 = A.data[i][k];
+                let elm2 = B.data[k][j];
                 sum += elm1 * elm2;
             }
+            
             return sum;
-        });
+        })
 
-        // matrix.log();
         return matrix;
-        
     }
 }
