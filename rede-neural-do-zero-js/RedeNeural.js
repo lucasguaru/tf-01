@@ -26,7 +26,7 @@ class RedeNeural {
         this.learning_rate = 0.1;
     }
 
-    contaMult(weight, hidden, bias) {
+    contaMult(weight, hidden, bias, trunc) {
         let out = [];
         let outSig = [];
         for (let x = 0; x < weight.data.length; x++) {
@@ -35,11 +35,19 @@ class RedeNeural {
             for (let y = 0; y < weight.data[x].length; y++) {
                 const w1 = weight.data[x][y];
                 const h1 = hidden.data[y][0];
-                strOut += "(" + w1 + " * " + h1 + ") + ";
+                if (trunc) {
+                    strOut += "(" + this.trunc(w1 + "") + " * " + this.trunc(h1 + "") + ") + ";
+                } else {
+                    strOut += "(" + w1 + " * " + h1 + ") + ";
+                }
                 sum += w1 * h1;
             }
             const b1 = bias.data[x][0];
-            strOut += b1;
+            if (trunc) {
+                strOut += this.trunc(b1 + "");
+            } else {
+                strOut += b1;
+            }
             sum += b1;
             strOut += " = " + sum;
             let sig =" => sig (" + sum + ") = " + sigmoid(sum);
@@ -48,6 +56,14 @@ class RedeNeural {
             outSig.push(strOut + sig);
         }
         return {out, outSig};
+    }
+
+    trunc(valor, tamanho) {
+        tamanho = tamanho || 12;
+        if (valor.length > tamanho) {
+            return valor.substr(0, tamanho) + "...";
+        }
+        return valor;
     }
 
     train(arr, target, backProgragation) {
@@ -67,19 +83,24 @@ class RedeNeural {
         output = Matrix.add(output, this.bias_ho);
         output.map(sigmoid);
         this.output = output;
-        this.outputConta = this.contaMult(this.weigths_ho, hidden, this.bias_ho);
+        this.outputConta = this.contaMult(this.weigths_ho, hidden, this.bias_ho, true);
 
         // BACKPROPAGATION
         if (backProgragation) {
             // OUTPUT -> HIDDEN
             let expected = Matrix.arrayToMatrix(target);
+            this.expected = expected;
             let output_error = Matrix.subtract(expected, output);
+            this.output_error = output_error;
             let d_output = Matrix.map(output,dsigmoid);
+            this.d_output = d_output;
+            this.output_error = output_error;
             let hidden_T = Matrix.transpose(hidden);
 
             let gradient = Matrix.hadamard(d_output,output_error);
-            gradient = Matrix.escalar_multiply(gradient, this.learning_rate);
             this.gradient = gradient;
+            gradient = Matrix.escalar_multiply(gradient, this.learning_rate);
+            this.gradientLR = gradient;
             
             // Adjust Bias O->H
             this.bias_ho = Matrix.add(this.bias_ho, gradient);

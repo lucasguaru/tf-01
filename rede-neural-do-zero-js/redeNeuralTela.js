@@ -68,12 +68,49 @@ class RedeNeuralTela {
         ctx.fillText("Bias Output", this.NUMBERS_LEFT + 900, this.NUMBERS_TOP);
 
         this.fontePequena();
-        let numbersTop = 430;
-        printArray(this.redeNeural.weigths_ih.data, 80, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
-        printArray(this.redeNeural.bias_ih.data, 400, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
-        printArray(this.redeNeural.weigths_ho.data, 600, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
-        printArray(this.redeNeural.bias_ho.data, 1060, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
+        this.numbersTop = 430;
+        let numbersTop = this.numbersTop;
 
+        this.printArray(this.redeNeural.weigths_ih.data, 80, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
+        this.printArray(this.redeNeural.bias_ih.data, 400, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
+        this.printArray(this.redeNeural.weigths_ho.data, 600, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
+        this.printArray(this.redeNeural.bias_ho.data, 1060, numbersTop, 140, 30, this.CONNECTIONS_COLORS);
+
+        this.drawHidden();
+        this.drawOutput();
+        this.drawErro();
+
+    }
+
+    drawErro() {
+        let numbersTop = 430;
+        // this.mostrarErro = true;
+        if (this.mostrarErro) {
+            this.drawLine(20, numbersTop + 80, 1140, numbersTop + 80);
+
+            this.fonteGrande('left');
+            numbersTop += 110;
+            ctx.fillText("Output Esperado", 20, numbersTop);
+            ctx.fillText("Output Erro", 175, numbersTop);
+            ctx.fillText("Dsigmoid (Output)", 290, numbersTop);
+            // ctx.fillText("Dsigmoid -> x * (1-x)", 290, numbersTop);
+            ctx.fillText("Gradiente", 480, numbersTop);
+            ctx.fillText("Learning Rate", 590, numbersTop);
+            ctx.fillText("Grad * Learn Rate", 710, numbersTop);
+    
+            this.fontePequena('left');
+            this.printTextoArray(this.redeNeural.expected.data, 45, numbersTop + 30, 140, 30, this.CONNECTIONS_COLORS);
+            this.printTextoArray(this.redeNeural.output_error.data, 150, numbersTop + 30, 140, 30);
+            this.printTextoArray(this.redeNeural.d_output.data, 300, numbersTop + 30, 140, 30);
+            this.printTextoArray(this.redeNeural.gradient.data, 450, numbersTop + 30, 140, 30);
+            ctx.fillText(this.redeNeural.learning_rate, 625, numbersTop + 30);
+            this.printTextoArray(this.redeNeural.gradientLR.data, 700, numbersTop + 30, 140, 30);
+
+        }
+    }
+
+    drawHidden() {
+        let numbersTop = 430;
         if (this.mostrarHidden) {
             this.drawLine(20, numbersTop + 80, 1140, numbersTop + 80);
 
@@ -82,9 +119,12 @@ class RedeNeuralTela {
             ctx.fillText("Cálculo do Hidden => Sigmoid -> 1 / (1 + Math.exp(-x))", this.NUMBERS_LEFT, numbersTop);
     
             this.fontePequena('left');
-            printTextoArray(this.mostrarHiddenSig ? this.hiddenConta.outSig : this.hiddenConta.out, 15, numbersTop + 30, 140, 30, this.CONNECTIONS_COLORS);
+            this.printTextoArray(this.mostrarHiddenSig ? this.hiddenConta.outSig : this.hiddenConta.out, 15, numbersTop + 30, 140, 30, this.CONNECTIONS_COLORS);
         }
+    }
 
+    drawOutput() {
+        let numbersTop = 530;
         if (this.mostrarOutput) {
             this.drawLine(20, numbersTop + 110, 1140, numbersTop + 110);
 
@@ -93,30 +133,30 @@ class RedeNeuralTela {
             ctx.fillText("Cálculo do Output => Sigmoid -> 1 / (1 + Math.exp(-x))", this.NUMBERS_LEFT, numbersTop);
     
             this.fontePequena('left');
-            printTextoArray(this.mostrarOutputSig ? this.outputConta.outSig : this.outputConta.out, 15, numbersTop + 30, 140, 30, this.CONNECTIONS_COLORS);
+            this.printTextoArray(this.mostrarOutputSig ? this.outputConta.outSig : this.outputConta.out, 15, numbersTop + 30, 140, 30, this.CONNECTIONS_COLORS);
         }
+    }    
 
-        function printArray(data, posLeft, posTop, distLeft, distTop, cores) {
-            for (let x = 0; x < data.length; x++) {
-                const ar = data[x];
-                for (let y = 0; y < ar.length; y++) {
-                    const item = ar[y];
-                    if (cores) {          
-                        ctx.fillStyle = cores[x];                        
-                    }
-                    ctx.fillText(item, posLeft + (distLeft * y), posTop + (distTop * x));
-                }
-            }
-        }
-
-        function printTextoArray(data, posLeft, posTop, distLeft, distTop, cores) {
-            for (let x = 0; x < data.length; x++) {
-                const item = data[x];
+    printArray(data, posLeft, posTop, distLeft, distTop, cores) {
+        for (let x = 0; x < data.length; x++) {
+            const ar = data[x];
+            for (let y = 0; y < ar.length; y++) {
+                const item = ar[y];
                 if (cores) {          
                     ctx.fillStyle = cores[x];                        
                 }
-                ctx.fillText(item, posLeft, posTop + (distTop * x));
+                ctx.fillText(item, posLeft + (distLeft * y), posTop + (distTop * x));
             }
+        }
+    }
+
+    printTextoArray(data, posLeft, posTop, distLeft, distTop, cores) {
+        for (let x = 0; x < data.length; x++) {
+            const item = data[x];
+            if (cores) {          
+                ctx.fillStyle = cores[x];                        
+            }
+            ctx.fillText(item, posLeft, posTop + (distTop * x));
         }
     }
     
