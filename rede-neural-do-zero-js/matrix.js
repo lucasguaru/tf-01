@@ -28,6 +28,7 @@ class Matrix {
         let arr = []
         obj.map((elm, i, j) => {
             arr.push(elm);
+            return elm;
         })
         return arr;
     }

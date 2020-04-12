@@ -19,7 +19,7 @@ function main() {
 function roda() {
     atualiza();
     desenha();
-    window.requestAnimationFrame(roda);
+    // window.requestAnimationFrame(roda);
 }
 function atualiza() {
     frames++;

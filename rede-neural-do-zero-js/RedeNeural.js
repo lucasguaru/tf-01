@@ -11,17 +11,38 @@ class RedeNeural {
         this.i_nodes = i_nodes;
         this.h_nodes = h_nodes;
         this.o_nodes = o_nodes;
-
-        this.bias_ih = new Matrix(this.h_nodes, 1);
-        this.bias_ih.randomize();
-        this.bias_ho = new Matrix(this.o_nodes, 1);
-        this.bias_ho.randomize();
-
-        this.weigths_ih = new Matrix(this.h_nodes, this.i_nodes);
-        this.weigths_ih.randomize()
-
-        this.weigths_ho = new Matrix(this.o_nodes, this.h_nodes)
-        this.weigths_ho.randomize()
+        
+        let carregar = false;
+        // let list = null;
+        // let item = localStorage.getItem("latest");
+        let list = localStorage.getItem("latestList");
+        if (carregar && list) {
+            list = JSON.parse(list);
+            let index = Math.floor(Math.random() * list.length);
+            let config = list[index];
+            this.weigths_ih = config.weigths_ih;
+            this.bias_ih = config.bias_ih;
+            this.weigths_ho = config.weigths_ho;
+            this.bias_ho = config.bias_ho;
+        // }
+        // if (item != null) {
+        //     let config = JSON.parse(item);
+        //     this.weigths_ih = config.weigths_ih;
+        //     this.bias_ih = config.bias_ih;
+        //     this.weigths_ho = config.weigths_ho;
+        //     this.bias_ho = config.bias_ho;
+        } else {
+            this.bias_ih = new Matrix(this.h_nodes, 1);
+            this.bias_ih.randomize();
+            this.bias_ho = new Matrix(this.o_nodes, 1);
+            this.bias_ho.randomize();
+    
+            this.weigths_ih = new Matrix(this.h_nodes, this.i_nodes);
+            this.weigths_ih.randomize()
+    
+            this.weigths_ho = new Matrix(this.o_nodes, this.h_nodes)
+            this.weigths_ho.randomize()
+        }
 
         this.learning_rate = 0.1;
     }
@@ -50,7 +71,7 @@ class RedeNeural {
             }
             sum += b1;
             strOut += " = " + sum;
-            let sig =" => sig (" + sum + ") = " + sigmoid(sum);
+            let sig =" => sig (" + this.trunc(sum + "") + ") = " + sigmoid(sum);
 
             out.push(strOut);
             outSig.push(strOut + sig);
@@ -59,11 +80,52 @@ class RedeNeural {
     }
 
     trunc(valor, tamanho) {
-        tamanho = tamanho || 12;
+        tamanho = tamanho || 10;
         if (valor.length > tamanho) {
             return valor.substr(0, tamanho) + "...";
         }
         return valor;
+    }
+
+    loadOld() {
+        let item = localStorage.getItem("latest");
+        if (item) {
+            let config = JSON.parse(item);
+            this.weigths_ih = config.weigths_ih;
+            this.bias_ih = config.bias_ih;
+            this.weigths_ho = config.weigths_ho;
+            this.bias_ho = config.bias_ho;
+        }
+    }
+
+    load() {
+        let list = localStorage.getItem("latestList");
+        if (list) {
+            list = JSON.parse(list);
+            let index = Math.floor(Math.random() * list.length);
+            let config = list[index];
+            this.weigths_ih = config.weigths_ih;
+            this.bias_ih = config.bias_ih;
+            this.weigths_ho = config.weigths_ho;
+            this.bias_ho = config.bias_ho;
+        }
+    }
+
+    save() {
+        let list = localStorage.getItem("latestList");
+        if (list) {
+            list = JSON.parse(list);
+        } else {
+            list = [];
+        }
+        let config = {
+            weigths_ih: this.weigths_ih,
+            bias_ih: this.bias_ih,
+            weigths_ho: this.weigths_ho,
+            bias_ho: this.bias_ho
+        }
+        list.push(config);
+        localStorage.setItem("latestList", JSON.stringify(list));
     }
 
     train(arr, target, backProgragation) {
@@ -94,7 +156,6 @@ class RedeNeural {
             this.output_error = output_error;
             let d_output = Matrix.map(output,dsigmoid);
             this.d_output = d_output;
-            this.output_error = output_error;
             let hidden_T = Matrix.transpose(hidden);
 
             let gradient = Matrix.hadamard(d_output,output_error);
@@ -130,9 +191,12 @@ class RedeNeural {
     predict(arr){
         // INPUT -> HIDDEN
         let input = Matrix.arrayToMatrix(arr);
+        this.input = arr;
 
         let hidden = Matrix.multiply(this.weigths_ih, input);
         hidden = Matrix.add(hidden, this.bias_ih);
+        this.hidden = hidden;
+        this.hiddenConta = this.contaMult(this.weigths_ih, input, this.bias_ih);
 
         hidden.map(sigmoid)
 
@@ -140,6 +204,9 @@ class RedeNeural {
         let output = Matrix.multiply(this.weigths_ho, hidden);
         output = Matrix.add(output, this.bias_ho);
         output.map(sigmoid);
+        this.output = output;
+        this.outputConta = this.contaMult(this.weigths_ho, hidden, this.bias_ho, true);
+
         output = Matrix.MatrixToArray(output);
 
         return output;

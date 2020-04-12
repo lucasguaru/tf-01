@@ -60,6 +60,8 @@ function clicou() {
             treinar(true);
             break;
     }
+    
+    roda();
 }
 
 function mostrarPesos() {
@@ -84,27 +86,58 @@ function mostrarOutputSig() {
     redeNeuralTela.mostrarOutputSig = true;
 }
 function mostrarErro() {
-    redeNeuralTela.mostrarHidden = false;
-    redeNeuralTela.mostrarHiddenSig = false;
-    redeNeuralTela.mostrarOutput = false;
-    redeNeuralTela.mostrarOutputSig = false;
-    redeNeuralTela.mostrarErro = true;
+    if (train) {
+        redeNeuralTela.mostrarHidden = false;
+        redeNeuralTela.mostrarHiddenSig = false;
+        redeNeuralTela.mostrarOutput = false;
+        redeNeuralTela.mostrarOutputSig = false;
+        redeNeuralTela.mostrarErro = true;
+    }
 }
 
 // setTimeout(treinar, 1000);
 // let i = 0;
 let treinosCount = 0;
+let train = true;
+let lastIndex = undefined;
 function treinar(backprop) {
+    if (train) {
+        for (let i = 0; i < 1000; i++) {
+            treinosCount++;
+            var index = Math.floor(Math.random() * 4);
+            redeNeural.train(dataset.inputs[index], dataset.outputs[index], backprop);        
+        }
 
-    for (let i = 0; i < 100; i++) {
-        treinosCount++;
-        var index = Math.floor(Math.random() * 4);
-        redeNeural.train(dataset.inputs[index], dataset.outputs[index], backprop);        
+        console.log('Treinos: ', treinosCount);
+        if (redeNeural.predict([0, 0])[0] < 0.04 && redeNeural.predict([1, 0])[0] > 0.98) {
+            train = false;
+            console.log("terminou");
+
+            redeNeural.save();
+
+            redeNeuralTela.mostrarHidden = true;
+            redeNeuralTela.mostrarHiddenSig = true;
+            redeNeuralTela.mostrarOutput = true;
+            redeNeuralTela.mostrarOutputSig = true;
+            redeNeuralTela.mostrarErro = false;
+        }
+    } else {
+        var index = 0;
+        while ((index = Math.floor(Math.random() * 4)) == lastIndex) {
+        }
+        lastIndex = index;
+        redeNeural.predict(dataset.inputs[index]);
+        redeNeuralTela.matrix[0] = redeNeural.input;
+        redeNeuralTela.matrix[1] = Matrix.transpose(redeNeural.hidden).data[0];
+        redeNeuralTela.matrix[2] = Matrix.transpose(redeNeural.output).data[0];
     }
+    redeNeuralTela.hiddenConta = redeNeural.hiddenConta;
+    redeNeuralTela.outputConta = redeNeural.outputConta;
+
     redeNeuralTela.matrix[0] = redeNeural.input;
     redeNeuralTela.matrix[1] = Matrix.transpose(redeNeural.hidden).data[0];
     redeNeuralTela.matrix[2] = Matrix.transpose(redeNeural.output).data[0];
-    console.log('Treinos: ', treinosCount);
+    
     
     // let train = false;
     // while (train) {

@@ -1,15 +1,26 @@
 class RedeNeuralTela {
-    NEURON_RAIO = 20;
+    NEURON_RAIO = 12;
     NEURON_DIST = 50;
     NEURON_DIST_LAT = 400;
-    NEURON_COLORS = ["green", "blue", "red"];
+    NEURON_COLORS = ["#QQFFWW", "#QQWWFF", "#FFQQWW"];
     CONNECTIONS_COLORS = ["green", "blue", "red", "brown", "blueviolet", "chartreuse", "coral"];
+    CONNECTIONS_COLORS_TRANSF = ["#QQ80WW", "#QQWW80", "#80QQWW", "brown", "blueviolet", "chartreuse", "coral"];
     NUMBERS_TOP = 400;
     NUMBERS_LEFT = 160;
 
     constructor(redeNeural) {
-        this.redeNeural = redeNeural;        
-        this.matrix = [[null, null], [null, null, null], [null]];
+        let aa = [];
+        aa[1] = [null];
+        aa[2] = [null, null];
+        aa[3] = [null, null, null];
+        aa[4] = [null, null, null, null];
+        this.redeNeural = redeNeural;
+        // this.matrix = [[null, null], [null, null, null], [null]];
+        let matrix = [];
+        matrix.push(aa[redeNeural.i_nodes]);
+        matrix.push(aa[redeNeural.h_nodes]);
+        matrix.push(aa[redeNeural.o_nodes]);
+        this.matrix = matrix;
     }
 
     font(f, align) {
@@ -160,6 +171,22 @@ class RedeNeuralTela {
         }
     }
     
+    corFF(valor) {
+        if (valor.length == 1) {
+            valor = "0" + valor;
+        }
+        return valor;
+    }
+    
+    corEmTom(cor, valor) {
+        if (valor) {
+            valor = this.corFF(valor.toString(16));
+            return cor.replace("QQ", valor).replace("WW", valor);
+        } else {
+            return cor.replace("QQ", "00").replace("WW", "00");
+        }
+    }
+    
     /**
      * 
      * @param {*} item item index (0 = first, 1 = second)
@@ -178,16 +205,22 @@ class RedeNeuralTela {
         ctx.beginPath();
         ctx.arc(x, y, this.NEURON_RAIO, 0, 2 * Math.PI);
         ctx.stroke();
-        ctx.fillStyle = this.NEURON_COLORS[layer];
-        ctx.fill();
+
 
         if (value !== null) {
+            let corCalc = 255 - Math.floor(255 * value);
+            ctx.fillStyle = this.corEmTom(this.NEURON_COLORS[layer], corCalc);
+            ctx.fill();
+
             this.font();
             if ((value + "").length < 5) {
                 ctx.fillText(value, x, y + 6);
             } else {
                 ctx.fillText(value, x, y - 22);
             }
+        } else {
+            ctx.fillStyle = this.NEURON_COLORS[layer];
+            ctx.fill();
         }
     }
 
@@ -198,7 +231,11 @@ class RedeNeuralTela {
             const ar = matrix[layerIndex];
             for (let elemIndex = 0; elemIndex < ar.length; elemIndex++) {
                 const valor = ar[elemIndex];
-                arPos.push(this.calcNeuronPosition(elemIndex, layerIndex, ar.length, maxLenght));
+                let neuronPos = this.calcNeuronPosition(elemIndex, layerIndex, ar.length, maxLenght);
+                if (valor != null) {
+                    neuronPos.valor = valor;
+                }
+                arPos.push(neuronPos);
             }
             matrixPos.push(arPos);
         }
@@ -209,18 +246,37 @@ class RedeNeuralTela {
                 const elemPos = ar[elemIndex];
                 const proxArray = matrixPos[layerIndex + 1];
                 proxArray.forEach((elemProxPos, proxIndex) => {
-                    this.drawLine(elemPos.x + this.NEURON_RAIO, elemPos.y, elemProxPos.x - this.NEURON_RAIO, elemProxPos.y, this.CONNECTIONS_COLORS[proxIndex]);
+                    this.drawLine(elemPos.x + this.NEURON_RAIO, elemPos.y, elemProxPos.x - this.NEURON_RAIO, elemProxPos.y, this.CONNECTIONS_COLORS_TRANSF[proxIndex], elemPos.valor);
                 });
             }
         }
     }
 
-    drawLine(x, y, xTo, yTo, color) {
+    drawLine(x, y, xTo, yTo, color, value) {
+        if (color === undefined) {
+            color = this.CONNECTIONS_COLORS_TRANSF[0];
+        }
+        let lineWidth = 1;
+        let cor = color;
+        if (value === 0) {
+            cor = "#ff80ff";
+        } else if (value !== undefined) {
+            if (value > 0.5) {
+                lineWidth = 2;
+            } else {
+                let corCalc = 255 - Math.floor(255 * value * 2);
+                cor = this.corEmTom(color, corCalc);
+            }
+        }
+        cor = this.corEmTom(cor); //Remove QQ e WW caso não tenha sido feito.
         ctx.beginPath();
+        ctx.lineWidth = lineWidth;
         ctx.moveTo(x, y);
         ctx.lineTo(xTo, yTo);
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = cor;
         ctx.stroke();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black";
     }
 
     calcNeuronPosition(item, layer, totalNeuronsOnLayer, maxNeurons) {
